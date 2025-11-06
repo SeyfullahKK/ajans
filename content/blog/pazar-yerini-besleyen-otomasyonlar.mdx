@@ -1,0 +1,39 @@
+---
+title: "Pazar yerini besleyen otomasyonlar nasıl kurulur?"
+excerpt: "Stok senkronizasyonu ve ürün feed otomasyonları ile iade oranlarını düşürüp siparişleri hızlandırmanın yolları."
+date: "2024-07-15"
+category: "Operasyon"
+tags:
+  - operasyon
+  - entegrasyon
+  - otomasyon
+cover: "/og/blog-automation.svg"
+---
+
+## Omnichannel stok görünürlüğünü doğru kurgulayın
+
+Birçok markada stok takibi hala Excel tabloları ile ilerliyor. Bu yaklaşım pazar yerlerine anlık stok gönderemediğinizde iptal oranlarını artırır.
+
+- Stok kaynağınızı tekilleştirin ve `ordre` gibi bir ara katman üzerinden dağıtın.
+- Depo, pazar yolları ve e-ticaret mağazanız için ayrı minimum stok eşikleri belirleyin.
+- Kritik ürün grupları için `webhook` tabanlı anlık stok push mekanizması kullanın.
+
+## Ürün besleme (feed) otomasyonunu standartlaştırın
+
+Feed otomasyonu yalnızca fiyat ve stok güncellemeleri değildir. Görsel, kategori ve SEO alanlarının da düzenli güncellenmesi gerekir.
+
+1. Ürün datasını normalize edin; karakter limitlerini pazar yerine göre ayırın.
+2. Kategori eşleştirmelerini manuel değil kural tabanlı yapın.
+3. Feed optimizasyonunu haftalık raporlayarak dönüşüm etkisini ölçün.
+
+> Converta olarak Logo, Nebim ve Mikro gibi ERP sistemlerinden feed üretimini otomatikleştiriyoruz. Bu sayede yeni ürünler dakikalar içinde tüm pazaryerlerinde yayına alınabiliyor.
+
+## Sipariş sonrası süreçleri otomasyonla hızlandırın
+
+Sipariş onayı, kargo etiketleme ve müşteri bilgilendirmeleri geciktiğinde iade oranları yükselir. `Webhook` veya `event-driven` kurgularla siparişi alır almaz aşağıdaki aksiyonları tetikleyin:
+
+- ERP tarafında stok düşümü
+- Kargo etiketi oluşturma ve müşteriye SMS/e-posta bilgilendirmesi
+- Çağrı merkezi CRM'ine not açılması
+
+Bu otomasyonlar iade oranlarını %18'den %11'e düşüren projelerimizin temelini oluşturdu.
