@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { submitContactAction } from "@/actions/contact";
 import {
   contactFormSchema,
   contactOptions,
   type ContactFormValues,
 } from "@/lib/contact-schema";
 import { trackEvent } from "@/lib/analytics";
+import { siteConfig } from "@/config/site";
 import {
   Form,
   FormControl,
@@ -47,7 +47,7 @@ const defaultValues: ContactFormValues = {
 
 export function ContactForm({ source = "modal" }: { source?: string }) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
 
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -62,29 +62,51 @@ export function ContactForm({ source = "modal" }: { source?: string }) {
   }, [form]);
 
   const onSubmit = (values: ContactFormValues) => {
-    const formData = new FormData();
-    formData.append("fullName", values.fullName);
-    formData.append("email", values.email);
-    formData.append("phone", values.phone);
-    formData.append("company", values.company);
-    formData.append("budget", values.budget);
-    formData.append("platform", values.platform);
-    values.needs.forEach((need) => formData.append("needs", need));
-    formData.append("message", values.message);
-    formData.append("website", values.website);
-    formData.append("timestamp", String(values.timestamp));
+    const elapsed = Date.now() - (values.timestamp ?? 0);
+    if (elapsed < 2000) {
+      toast.error("Form çok hızlı gönderildi. Lütfen tekrar deneyin.");
+      return;
+    }
 
-    startTransition(async () => {
-      const result = await submitContactAction(formData);
-      if (result.success) {
-        toast.success("Form gönderildi. Ekip kısa sürede dönüş yapacak.");
-        trackEvent("contact_submit", { source });
-        form.reset({ ...defaultValues, timestamp: Date.now() });
-        router.push("/iletisim/tesekkur");
-      } else {
-        toast.error(result.error);
+    setIsPending(true);
+    try {
+      const subject = encodeURIComponent(
+        `Converta iletişim isteği – ${values.fullName}`,
+      );
+      const bodyLines: string[] = [
+        `Ad Soyad: ${values.fullName}`,
+        `E-posta: ${values.email}`,
+        `Telefon: ${values.phone}`,
+        `Şirket / Marka: ${values.company}`,
+        `Aylık bütçe: ${values.budget}`,
+        `Mevcut altyapı: ${values.platform}`,
+        `Mesaj: ${values.message}`,
+      ];
+      if (values.needs.length > 0) {
+        bodyLines.push(`Öne çıkan ihtiyaçlar: ${values.needs.join(", ")}`);
       }
-    });
+      if (values.website) {
+        bodyLines.push(`Web sitesi: ${values.website}`);
+      }
+      const body = encodeURIComponent(bodyLines.join("\n"));
+      const mailtoUrl = `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
+
+      if (typeof window !== "undefined") {
+        window.location.href = mailtoUrl;
+      }
+
+      toast.success(
+        "E-posta istemcinizde yeni bir taslak açıldı. Mesajınızı gönderin.",
+      );
+      trackEvent("contact_submit", { source });
+      form.reset({ ...defaultValues, timestamp: Date.now() });
+      router.push("/iletisim/tesekkur");
+    } catch (error) {
+      console.error(error);
+      toast.error("E-posta taslağı oluşturulamadı. Lütfen doğrudan e-posta gönderin.");
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

@@ -8,10 +8,22 @@ const withMDX = createMDX({
   },
 });
 
+const trimmedBasePath =
+  process.env.NEXT_PUBLIC_BASE_PATH?.replace(/^\/|\/$/g, "") ?? "";
+const basePath =
+  process.env.NODE_ENV === "production" && trimmedBasePath.length > 0
+    ? `/${trimmedBasePath}`
+    : undefined;
+
 const nextConfig: NextConfig = {
+  output: "export",
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   typedRoutes: true,
+  trailingSlash: true,
+  basePath,
+  assetPrefix: basePath ? `${basePath}/` : undefined,
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
